@@ -15,7 +15,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
 from app.db.database import init_db
@@ -104,3 +105,20 @@ from app.api import auth, quests, users
 app.include_router(auth.router,   prefix="/api/auth",   tags=["auth"])
 app.include_router(users.router,  prefix="/api/users",  tags=["users"])
 app.include_router(quests.router, prefix="/api/quests", tags=["quests"])
+
+# Статика фронтенда
+_static = settings.frontend_static_path / "static"
+if _static.exists():
+    app.mount("/static", StaticFiles(directory=str(_static)), name="static")
+
+
+@app.get("/", include_in_schema=False)
+async def serve_index() -> FileResponse:
+    """Login-страница."""
+    return FileResponse(str(settings.frontend_static_path / "index.html"))
+
+
+@app.get("/app", include_in_schema=False)
+async def serve_app() -> FileResponse:
+    """Главный экран с камерой."""
+    return FileResponse(str(settings.frontend_static_path / "app.html"))

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>CASPER — Войти</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <style>
+    body { display: flex; align-items: center; justify-content: center; height: 100vh; }
+
+    .login-wrap {
+      width: 100%;
+      max-width: 380px;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      animation: slideUp 0.5s ease forwards;
+    }
+
+    .logo {
+      font-size: 64px;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 0 20px rgba(0,170,255,0.5));
+    }
+
+    .app-name {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 6px;
+      color: var(--accent);
+      text-shadow: 0 0 20px var(--accent-glow);
+      margin-bottom: 6px;
+    }
+
+    .app-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-bottom: 40px;
+      line-height: 1.5;
+    }
+
+    .login-box {
+      width: 100%;
+      padding: 28px 24px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--bg-panel);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .login-box h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-align: center;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(0,170,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 16px;
+      font-family: var(--font-main);
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .input-wrap input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .input-wrap input::placeholder { color: var(--text-dim); }
+
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: 10px;
+      background: var(--accent);
+      color: var(--bg-dark);
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition);
+      letter-spacing: 0.5px;
+    }
+    .btn-login:hover   { box-shadow: 0 0 24px var(--accent-glow); background: #22bbff; }
+    .btn-login:active  { transform: scale(0.98); }
+    .btn-login:disabled { opacity: 0.5; cursor: default; }
+
+    .error-msg {
+      font-size: 13px;
+      color: var(--danger);
+      text-align: center;
+      min-height: 18px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* Декоративная линия снизу */
+    .scan-line {
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      margin: 24px auto 0;
+      animation: pulse 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="logo">🤖</div>
+    <div class="app-name">CASPER</div>
+    <div class="app-sub">AR-помощник для адаптации<br>на производстве</div>
+
+    <div class="login-box">
+      <h2>Введи свой никнейм</h2>
+
+      <div class="input-wrap">
+        <input
+          type="text"
+          id="username-input"
+          placeholder="Например: Parker"
+          maxlength="32"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+        >
+      </div>
+
+      <button class="btn-login" id="btn-login">Начать миссию →</button>
+
+      <div class="error-msg" id="error-msg"></div>
+
+      <div class="hint">
+        Если аккаунта нет — он создастся автоматически.<br>
+        Пароль не нужен.
+      </div>
+    </div>
+
+    <div class="scan-line"></div>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script>
+    // Если уже залогинен — сразу в приложение
+    if (API.hasToken()) window.location.href = '/app';
+
+    const input   = document.getElementById('username-input');
+    const btn     = document.getElementById('btn-login');
+    const errorEl = document.getElementById('error-msg');
+
+    async function doLogin() {
+      const username = input.value.trim();
+      if (!username) {
+        errorEl.textContent = 'Введи никнейм';
+        input.focus();
+        return;
+      }
+      if (!/^[a-zA-Z0-9_\-]+$/.test(username)) {
+        errorEl.textContent = 'Только латиница, цифры, _ и -';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Подключение...';
+      errorEl.textContent = '';
+
+      try {
+        await API.login(username);
+        window.location.href = '/app';
+      } catch (err) {
+        errorEl.textContent = err.message || 'Ошибка подключения';
+        btn.disabled = false;
+        btn.textContent = 'Начать миссию →';
+      }
+    }
+
+    btn.addEventListener('click', doLogin);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    input.focus();
+  </script>
+</body>
+</html>
