@@ -22,15 +22,21 @@
   // ---- Инициализация AR-оверлея ----
   AROverlay.init(canvasEl);
 
+  // ---- Инициализация vision-клиента ----
+  VisionClient.init();
+
   // ---- Запуск камеры ----
   async function startCamera(facingMode = 'environment') {
     const ok = await Camera.start(videoEl, facingMode);
     if (!ok) {
       cameraError.classList.remove('hidden');
       videoEl.classList.add('hidden');
+      VisionClient.stop();
     } else {
       cameraError.classList.add('hidden');
       videoEl.classList.remove('hidden');
+      const isPPE = facingMode === 'user';
+      VisionClient.start(videoEl, isPPE);
     }
   }
 

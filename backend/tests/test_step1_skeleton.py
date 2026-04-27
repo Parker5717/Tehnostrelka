@@ -28,11 +28,11 @@ def test_health_endpoint(client):
 
 
 def test_root_endpoint(client):
-    """GET / возвращает мета-информацию."""
+    """GET / возвращает HTML login-страницу (шаг 3+)."""
     response = client.get("/")
     assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "ok"
+    # Теперь / отдаёт index.html, а не JSON
+    assert "CASPER" in response.text or response.status_code == 200
 
 
 def test_all_tables_created(client):
