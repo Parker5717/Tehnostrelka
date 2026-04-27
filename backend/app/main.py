@@ -39,7 +39,10 @@ async def lifespan(app: FastAPI):
     log.info("Initializing database at %s", settings.database_url)
     init_db()
     log.info("Database ready")
-    # Сюда позже добавим: загрузку YOLO-моделей, сидинг квестов из YAML
+    from app.db.seed import seed_content
+    seed_content()
+    log.info("Content seeded")
+    # Сюда на шаге 4 добавим: загрузку YOLO-моделей
     yield
     log.info("Shutting down %s", settings.app_name)
 
@@ -95,9 +98,9 @@ async def health() -> JSONResponse:
     )
 
 
-# Роутеры API будут подключаться здесь по мере реализации:
-# from app.api import auth, quests, progress, vision_ws
-# app.include_router(auth.router,    prefix="/api/auth",    tags=["auth"])
-# app.include_router(quests.router,  prefix="/api/quests",  tags=["quests"])
-# app.include_router(progress.router, prefix="/api/progress", tags=["progress"])
-# app.include_router(vision_ws.router, prefix="/ws",         tags=["vision"])
+# Роутеры API
+from app.api import auth, quests, users
+
+app.include_router(auth.router,   prefix="/api/auth",   tags=["auth"])
+app.include_router(users.router,  prefix="/api/users",  tags=["users"])
+app.include_router(quests.router, prefix="/api/quests", tags=["quests"])
