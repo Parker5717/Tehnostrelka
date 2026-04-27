@@ -94,6 +94,7 @@ class QuestCompleteOut(BaseModel):
     new_total_xp: int
     new_level: int
     leveled_up: bool
+    newly_unlocked_achievements: list[dict] = []
     message: str
 
 

@@ -90,15 +90,16 @@ async def health() -> JSONResponse:
 
 
 # Роутеры API
-from app.api import auth, quests, users, vision, markers
+from app.api import auth, quests, users, vision, markers, progress
 from app.api import vision_ws
 
-app.include_router(auth.router,       prefix="/api/auth",    tags=["auth"])
-app.include_router(users.router,      prefix="/api/users",   tags=["users"])
-app.include_router(quests.router,     prefix="/api/quests",  tags=["quests"])
-app.include_router(vision.router,     prefix="/api/vision",  tags=["vision"])
-app.include_router(markers.router,    prefix="/api/markers", tags=["markers"])
-app.include_router(vision_ws.router,  prefix="/ws",          tags=["websocket"])
+app.include_router(auth.router,       prefix="/api/auth",     tags=["auth"])
+app.include_router(users.router,      prefix="/api/users",    tags=["users"])
+app.include_router(quests.router,     prefix="/api/quests",   tags=["quests"])
+app.include_router(vision.router,     prefix="/api/vision",   tags=["vision"])
+app.include_router(markers.router,    prefix="/api/markers",  tags=["markers"])
+app.include_router(progress.router,   prefix="/api/progress", tags=["progress"])
+app.include_router(vision_ws.router,  prefix="/ws",           tags=["websocket"])
 
 # Статика фронтенда
 _static = settings.frontend_static_path / "static"

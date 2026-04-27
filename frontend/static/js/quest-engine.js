@@ -61,6 +61,10 @@ const QuestEngine = (() => {
       const result = await API.completeQuest(slug);
       XPBar.showXPGain(result.xp_gained, result.leveled_up, result.new_level, result.message);
       AROverlay.flashSuccess();
+      // Показываем новые ачивки
+      if (result.newly_unlocked_achievements?.length > 0) {
+        setTimeout(() => Achievements.notifyNew(result.newly_unlocked_achievements), 1500);
+      }
       await load();
       return result;
     } catch (err) {
@@ -132,12 +136,20 @@ const QuestEngine = (() => {
 
   function openModal() {
     const modal = document.getElementById('quest-modal');
-    if (modal) modal.classList.add('open');
+    const inner = document.getElementById('quest-modal-inner');
+    if (!modal) return;
+    modal.style.opacity = '1';
+    modal.style.pointerEvents = 'all';
+    if (inner) inner.style.transform = 'translateY(0)';
   }
 
   function closeModal() {
     const modal = document.getElementById('quest-modal');
-    if (modal) modal.classList.remove('open');
+    const inner = document.getElementById('quest-modal-inner');
+    if (!modal) return;
+    modal.style.opacity = '0';
+    modal.style.pointerEvents = 'none';
+    if (inner) inner.style.transform = 'translateY(100%)';
   }
 
   return { load, start, complete, getActive, getAll, openModal, closeModal };

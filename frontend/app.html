@@ -50,6 +50,8 @@
   <button class="hud-btn" id="btn-toggle-camera" title="Переключить камеру">🔄</button>
   <!-- Список квестов -->
   <button class="hud-btn" id="btn-quests" title="Квесты">🎯</button>
+  <!-- Ачивки -->
+  <button class="hud-btn" id="btn-achievements" title="Достижения">🏆</button>
   <!-- Выход -->
   <button class="hud-btn" id="btn-logout" title="Выйти" style="color:var(--danger)">🚪</button>
 </div>
@@ -90,6 +92,35 @@
 </div>
 
 <!-- ============================================================
+     МОДАЛКА — АЧИВКИ
+     ============================================================ -->
+<div id="achievements-modal" style="
+  position:fixed;inset:0;
+  background:rgba(7,11,20,0.7);
+  backdrop-filter:blur(4px);
+  z-index:50;display:flex;
+  align-items:flex-end;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.3s;
+">
+  <div style="
+    width:100%;max-height:80vh;
+    background:var(--bg-dark);
+    border-top:1px solid var(--border-bright);
+    border-radius:20px 20px 0 0;
+    padding:16px 16px 32px;
+    transform:translateY(100%);
+    transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  " id="achievements-modal-inner">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+      <span style="font-size:17px;font-weight:700">🏆 Достижения</span>
+      <button class="btn" id="btn-close-achievements" style="padding:6px 14px;font-size:13px">Закрыть</button>
+    </div>
+    <div id="achievements-list" class="scroll-y" style="max-height:60vh;padding-right:4px"></div>
+  </div>
+</div>
+
+<!-- ============================================================
      ВСПЛЫВАЮЩИЕ УВЕДОМЛЕНИЯ
      ============================================================ -->
 <div id="xp-popup" class="xp-popup">+50 XP</div>
@@ -109,6 +140,7 @@
 <script src="/static/js/camera.js"></script>
 <script src="/static/js/ar-overlay.js"></script>
 <script src="/static/js/xp-bar.js"></script>
+<script src="/static/js/achievements.js"></script>
 <script src="/static/js/quest-engine.js"></script>
 <script src="/static/js/vision-client.js"></script>
 <script src="/static/js/app.js"></script>

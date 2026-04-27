@@ -89,6 +89,8 @@ const API = (() => {
     hasToken,
     clearToken,
     login,
+    get,
+    post,
     getProfile,
     getQuests,
     startQuest,

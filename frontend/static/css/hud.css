@@ -321,3 +321,12 @@
 #camera-error .icon { font-size: 48px; }
 #camera-error h3 { color: var(--text-primary); font-size: 18px; }
 #camera-error p { font-size: 14px; line-height: 1.5; }
+
+/* Ачивки модалка */
+#achievements-modal.open {
+  opacity: 1;
+  pointer-events: all;
+}
+#achievements-modal.open #achievements-modal-inner {
+  transform: translateY(0);
+}

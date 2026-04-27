@@ -184,6 +184,17 @@ def complete_quest(
     current_user.total_xp = new_xp
     current_user.level = new_level
 
+    # Записываем ScanEvent (для ачивок)
+    from app.game.achievements import check_and_unlock_achievements, record_scan_event
+    record_scan_event(
+        db,
+        user_id=current_user.id,
+        detected_class=quest.target_class,
+        marker_id=quest.target_marker_id,
+        quest_id=quest.id,
+    )
+    db.flush()  # flush чтобы ScanEvent был виден при проверке ачивок
+
     # Разблокируем следующий квест если есть
     next_quest = db.query(Quest).filter(Quest.prerequisite_slug == slug).first()
     if next_quest:
@@ -198,6 +209,9 @@ def complete_quest(
         if next_progress and next_progress.status == QuestStatus.LOCKED.value:
             next_progress.status = QuestStatus.AVAILABLE.value
             log.info("Разблокирован квест '%s' для %s", next_quest.slug, current_user.username)
+
+    # Проверяем ачивки
+    newly_unlocked = check_and_unlock_achievements(db, current_user)
 
     db.commit()
 
@@ -214,6 +228,7 @@ def complete_quest(
         new_total_xp=new_xp,
         new_level=new_level,
         leveled_up=leveled_up,
+        newly_unlocked_achievements=newly_unlocked,
         message=(
             f"🎉 Уровень {new_level}! Ты теперь «{level_title(new_level)}»!"
             if leveled_up

@@ -70,6 +70,22 @@
   // Открыть список квестов
   btnQuests.addEventListener('click', () => QuestEngine.openModal());
 
+  // Ачивки
+  const btnAchievements = document.getElementById('btn-achievements');
+  if (btnAchievements) {
+    btnAchievements.addEventListener('click', () => Achievements.openModal());
+  }
+  const btnCloseAch = document.getElementById('btn-close-achievements');
+  if (btnCloseAch) {
+    btnCloseAch.addEventListener('click', () => Achievements.closeModal());
+  }
+  const achModal = document.getElementById('achievements-modal');
+  if (achModal) {
+    achModal.addEventListener('click', e => {
+      if (e.target === achModal) Achievements.closeModal();
+    });
+  }
+
   // Закрыть модалку кликом на фон
   document.getElementById('quest-modal').addEventListener('click', e => {
     if (e.target === document.getElementById('quest-modal')) QuestEngine.closeModal();
