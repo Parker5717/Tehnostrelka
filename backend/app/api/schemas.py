@@ -68,8 +68,10 @@ class QuestOut(BaseModel):
     xp_reward: int
     difficulty: int
     story_chapter: int
-    status: str              # locked / available / active / completed / failed
-    params_json: str         # фронт парсит сам (quiz, required_ppe, и т.д.)
+    status: str
+    params_json: str
+    target_marker_id: int | None = None   # нужен фронту для CV-матчинга
+    target_class: str | None = None        # нужен фронту для CV-матчинга
 
     model_config = {"from_attributes": True}
 

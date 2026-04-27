@@ -112,20 +112,38 @@ const VisionClient = (() => {
   function _handleDetections(data) {
     AROverlay.updateDetections(data.all_detections || []);
     if (_isPPEMode && data.ppe) { _updatePPEUI(data.ppe); return; }
-    if ((data.all_detections || []).length > 0) _checkQuestProgress(data);
+    const dets = data.all_detections || [];
+    if (dets.length > 0) {
+      console.log('[Vision] Детекций:', dets.length,
+        '| markers:', (data.markers||[]).map(m=>m.marker_id),
+        '| objects:', (data.objects||[]).map(o=>o.detected_class));
+      _checkQuestProgress(data);
+    }
   }
 
   function _checkQuestProgress(data) {
     const q = QuestEngine.getActive();
-    if (!q) return;
+    if (!q) {
+      console.log('[Quest] Нет активного квеста — начни квест через 🎯');
+      return;
+    }
+    console.log('[Quest] Активный:', q.slug,
+      '| target_marker_id:', q.target_marker_id,
+      '| target_class:', q.target_class);
+
     let matched = false;
     if (q.target_marker_id !== null && q.target_marker_id !== undefined) {
       matched = (data.markers || []).some(m => m.marker_id === q.target_marker_id);
+      console.log('[Quest] Маркер совпадение:', matched,
+        '(ищем ID', q.target_marker_id, ', видим', (data.markers||[]).map(m=>m.marker_id), ')');
     }
     if (!matched && q.target_class) {
       matched = (data.objects || []).some(o => o.detected_class === q.target_class);
     }
-    if (matched) _showCompleteButton(q);
+    if (matched) {
+      console.log('[Quest] ✅ СОВПАДЕНИЕ! Показываю кнопку завершения');
+      _showCompleteButton(q);
+    }
   }
 
   let _completeTimeout = null;

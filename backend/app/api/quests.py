@@ -45,6 +45,8 @@ def _quest_to_out(quest: Quest, progress: UserQuestProgress | None) -> QuestOut:
         story_chapter=quest.story_chapter,
         status=status_val,
         params_json=quest.params_json,
+        target_marker_id=quest.target_marker_id,
+        target_class=quest.target_class,
     )
 
 
