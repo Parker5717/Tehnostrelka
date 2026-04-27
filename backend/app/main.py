@@ -71,16 +71,6 @@ app.add_middleware(
 # Базовые эндпоинты (на шаге 1 их два — корень и health)
 # ---------------------------------------------------------------------------
 
-@app.get("/", tags=["meta"])
-async def root() -> dict:
-    """Заглушка корня. На шаге 3 заменим на отдачу index.html."""
-    return {
-        "app": settings.app_name,
-        "version": settings.app_version,
-        "status": "ok",
-        "docs": "/docs",
-    }
-
 
 @app.get("/health", tags=["meta"])
 async def health() -> JSONResponse:
