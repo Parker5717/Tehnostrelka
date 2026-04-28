@@ -151,30 +151,47 @@
 
 <script>
   const MARKERS = [
-    { id: 0, icon: '🚪', label: 'Входная зона',          quest: 'Квест: Первый шаг' },
-    { id: 1, icon: '🛑', label: 'Аварийный стоп',         quest: 'Квест: Аварийная остановка' },
-    { id: 2, icon: '⚙️', label: 'Рабочий станок',         quest: 'Квест: Знакомство со станком' },
-    { id: 3, icon: '🔧', label: 'Зона хранения инструмента', quest: 'Квест: Финальный осмотр' },
+    { id: 0,  icon: '🚪', label: 'Входная зона',             quest: 'Квест: Первый шаг' },
+    { id: 1,  icon: '🛑', label: 'Аварийный стоп',            quest: 'Квест: Аварийная остановка' },
+    { id: 2,  icon: '⚙️', label: 'Рабочий станок',            quest: 'Квест: Знакомство со станком' },
+    { id: 3,  icon: '🔧', label: 'Зона хранения инструмента', quest: 'Квест: Финальный осмотр' },
+  ];
+
+  const PPE_MARKERS = [
+    { id: 10, icon: '⛑', label: 'КАСКА (СИЗ)',  quest: 'Safety Check — приложи к голове/лбу' },
+    { id: 11, icon: '🦺', label: 'ЖИЛЕТ (СИЗ)', quest: 'Safety Check — приложи к груди' },
   ];
 
   const grid = document.getElementById('markers-grid');
 
+  // Цеховые маркеры
   MARKERS.forEach(({ id, icon, label, quest }) => {
+    grid.appendChild(_makeCard(id, icon, label, quest));
+  });
+
+  // Разделитель
+  const sep = document.createElement('div');
+  sep.style.cssText = 'grid-column:1/-1;border-top:1px solid var(--border);padding-top:16px;text-align:center;color:var(--accent);font-size:13px;font-family:var(--font-mono);letter-spacing:1px';
+  sep.textContent = '⛑ МАРКЕРЫ СИЗ — для Safety Check';
+  grid.appendChild(sep);
+
+  // PPE маркеры
+  PPE_MARKERS.forEach(({ id, icon, label, quest }) => {
+    grid.appendChild(_makeCard(id, icon, label, quest));
+  });
+
+  function _makeCard(id, icon, label, quest) {
     const card = document.createElement('div');
     card.className = 'marker-card';
     card.innerHTML = `
       <div class="marker-icon">${icon}</div>
       <div class="marker-id">ArUco ID: ${id} · DICT_4X4_50</div>
-      <img
-        src="/api/markers/${id}/image"
-        alt="ArUco маркер ${id}"
-        loading="lazy"
-      >
+      <img src="/api/markers/${id}/image" alt="ArUco маркер ${id}" loading="lazy">
       <div class="marker-label">${label}</div>
       <div class="marker-quest">${quest}</div>
     `;
-    grid.appendChild(card);
-  });
+    return card;
+  }
 </script>
 
 </body>

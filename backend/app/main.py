@@ -123,3 +123,9 @@ async def serve_app() -> FileResponse:
 async def serve_markers() -> FileResponse:
     """Страница с печатными ArUco маркерами."""
     return FileResponse(str(settings.frontend_static_path / "markers.html"))
+
+
+@app.get("/safety", include_in_schema=False)
+async def serve_safety() -> FileResponse:
+    """Safety Check экран — проверка СИЗ."""
+    return FileResponse(str(settings.frontend_static_path / "safety.html"))
