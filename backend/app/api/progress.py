@@ -65,6 +65,7 @@ def record_safety_check(
         "recorded": True,
         "newly_unlocked_achievements": newly_unlocked,
     }
+@router.get("/stats", summary="Stats")
 def get_stats(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
