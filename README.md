@@ -46,6 +46,24 @@ uvicorn app.main:app --reload
 
 Открой **http://localhost:8000** — страница логина.
 
+### Запуск на телефоне через ngrok
+
+Камера в браузере требует HTTPS. ngrok даёт публичный HTTPS-адрес за 2 минуты.
+
+```bash
+# 1. Скачай ngrok: https://ngrok.com/download
+# 2. Зарегистрируйся на ngrok.com, получи authtoken
+ngrok config add-authtoken ТВОЙ_ТОКЕН
+
+# 3. Запусти сервер (в одном окне)
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# 4. Запусти туннель (в другом окне)
+ngrok http 8000
+```
+
+ngrok выдаст URL вида `https://abc123.ngrok-free.app` — открывай на любом телефоне в той же сети или через мобильный интернет. Камера, WebSocket и все фичи работают полностью.
+
 ### Маркеры для демо
 
 Открой **http://localhost:8000/markers** → распечатай → прикрепи к объектам.
