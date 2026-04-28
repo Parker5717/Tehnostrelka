@@ -54,12 +54,27 @@
   try {
     const profile = await API.getProfile();
     XPBar.update(profile);
+    // Сбрасываем флаг онбординга для новых пользователей
+    // (< 50 XP = ни одного квеста не завершено, safety check даёт 25 XP через ачивку)
+    if (profile.total_xp < 50) {
+      sessionStorage.removeItem('casper_onboarding_done');
+    }
+    // Онбординг показываем только после проверки XP
+    setTimeout(() => Onboarding.maybeShow(), 300);
   } catch (err) {
     console.error('Ошибка загрузки профиля:', err);
+    // Если профиль не загрузился — всё равно показываем онбординг
+    setTimeout(() => Onboarding.maybeShow(), 300);
   }
 
   // ---- Загрузка квестов ----
   await QuestEngine.load();
+
+  // Если speed_run квест уже активен (например после перезагрузки) — запускаем трекер
+  const activeQuest = QuestEngine.getActive();
+  if (activeQuest && activeQuest.type === 'speed_run') {
+    SpeedRun.start(activeQuest);
+  }
 
   // ---- Обработчики кнопок ----
 

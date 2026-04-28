@@ -9,10 +9,10 @@ achievements:
 
   - slug: safety_master
     title: "Гуру безопасности"
-    description: "Прошёл проверку СИЗ 5 раз подряд без нареканий."
+    description: "Прошёл проверку СИЗ 3 раза. Безопасность — твой приоритет!"
     icon: shield
     xp_bonus: 75
-    condition_json: '{"type": "quest_completed_count", "quest_slug": "safety_first", "min": 5}'
+    condition_json: '{"type": "scan_count_class", "detected_class": "safety_check", "min": 3}'
 
   - slug: speed_demon
     title: "Молния"

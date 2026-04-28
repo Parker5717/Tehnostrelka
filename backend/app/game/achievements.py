@@ -103,6 +103,16 @@ def _check_condition(db: Session, user: User, condition: dict) -> bool:
         )
         return count >= min_count
 
+    if ctype == "scan_count_class":
+        min_count = condition.get("min", 1)
+        cls = condition.get("detected_class", "")
+        count = (
+            db.query(ScanEvent)
+            .filter(ScanEvent.user_id == user.id, ScanEvent.detected_class == cls)
+            .count()
+        )
+        return count >= min_count
+
     log.warning("Неизвестный тип условия ачивки: %s", ctype)
     return False
 

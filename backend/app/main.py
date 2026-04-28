@@ -135,3 +135,9 @@ async def serve_safety() -> FileResponse:
 async def serve_profile() -> FileResponse:
     """Страница профиля и лидерборда."""
     return FileResponse(str(settings.frontend_static_path / "profile.html"))
+
+
+@app.get("/encyclopedia", include_in_schema=False)
+async def serve_encyclopedia() -> FileResponse:
+    """Энциклопедия объектов цеха."""
+    return FileResponse(str(settings.frontend_static_path / "encyclopedia.html"))

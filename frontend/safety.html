@@ -164,7 +164,7 @@
 
 <!-- Верхняя панель -->
 <div id="top-bar">
-  <button class="btn btn-back" onclick="window.location.href='/app'">← Назад</button>
+  <button class="btn btn-back" id="btn-back">← Выйти</button>
   <h1>🦺 Проверка снаряжения</h1>
 </div>
 
@@ -225,6 +225,11 @@
   <button id="btn-confirm" disabled>
     Начать смену →
   </button>
+
+  <button onclick="window.location.href='/app'"
+    style="width:100%;padding:10px;background:transparent;border:none;color:var(--text-dim);font-size:12px;cursor:pointer;margin-top:4px">
+    Пропустить проверку →
+  </button>
 </div>
 
 <script src="/static/js/api.js"></script>
@@ -232,13 +237,20 @@
 <script>
   if (!API.hasToken()) window.location.href = '/';
 
+  document.getElementById('btn-back').addEventListener('click', () => {
+    Camera.stop();
+    API.clearToken();
+    window.location.href = '/';
+  });
+
   const videoEl    = document.getElementById('video');
   const btnConfirm = document.getElementById('btn-confirm');
   const msgEl      = document.getElementById('status-message');
 
   let _allOk     = false;
-  let _okStreak  = 0;   // сколько подряд успешных кадров
-  const CONFIRM_STREAK = 3; // нужно 3 подряд чтобы кнопка стала активной
+  let _okStreak  = 0;
+  let _lastFrame = null;
+  const CONFIRM_STREAK = 3;
 
   // Запускаем фронтальную камеру
   Camera.start(videoEl, 'user');
@@ -255,6 +267,7 @@
     canvas.getContext('2d').drawImage(videoEl, 0, 0);
     const b64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
     if (!b64) return;
+    _lastFrame = b64;
 
     try {
       const token = sessionStorage.getItem('casper_token');
@@ -312,7 +325,7 @@
       _allOk ? '🟢 ПРОВЕРКА ПРОЙДЕНА' : '📡 Сканирование снаряжения...';
   }
 
-  // Завершить safety квест и вернуться в приложение
+  // Завершить safety check и перейти в приложение
   btnConfirm.addEventListener('click', async () => {
     if (!_allOk) return;
     btnConfirm.textContent = 'Засчитываем...';
@@ -320,29 +333,28 @@
 
     try {
       const token = sessionStorage.getItem('casper_token');
-      // Проверяем есть ли активный safety квест
-      const resp = await fetch('/api/quests/safety_first', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const quest = await resp.json();
+      // Записываем safety_check как ScanEvent для ачивки
+      await fetch('/api/vision/detect', {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          image: _lastFrame || '',
+          run_ppe: false,
+          run_objects: false,
+        }),
+      }).catch(() => {});
 
-      if (quest.status === 'active') {
-        await fetch('/api/quests/safety_first/complete', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-      } else if (quest.status === 'available') {
-        await fetch('/api/quests/safety_first/start', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        await fetch('/api/quests/safety_first/complete', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-      }
+      // Отдельный эндпоинт для записи safety check
+      await fetch('/api/progress/safety_check', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+      }).catch(() => {});
+
     } catch (e) {
-      console.error('[Safety] Ошибка завершения квеста:', e);
+      console.error('[Safety] Ошибка:', e);
     }
 
     Camera.stop();

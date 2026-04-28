@@ -46,7 +46,25 @@ def get_achievements(
     return result
 
 
-@router.get("/stats", summary="Сводная статистика пользователя")
+@router.post("/safety_check", summary="Записать прохождение Safety Check")
+def record_safety_check(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    """
+    Вызывается при успешном прохождении Safety Check.
+    Записывает ScanEvent с detected_class='safety_check' для ачивки.
+    """
+    from app.game.achievements import check_and_unlock_achievements, record_scan_event
+    record_scan_event(db, user_id=current_user.id, detected_class="safety_check")
+    db.flush()
+    newly_unlocked = check_and_unlock_achievements(db, current_user)
+    db.commit()
+    log.info("Safety Check пройден: %s", current_user.username)
+    return {
+        "recorded": True,
+        "newly_unlocked_achievements": newly_unlocked,
+    }
 def get_stats(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

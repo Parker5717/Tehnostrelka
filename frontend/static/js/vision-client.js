@@ -109,14 +109,119 @@ const VisionClient = (() => {
     }
   }
 
+  // ---- Маппинг детекций → ID объектов в энциклопедии ----
+  const DETECTION_TO_ENCYCLOPEDIA = {
+    // marker_id → encyclopedia object id
+    markers: {
+      0: 'marker_0',
+      1: 'marker_1',
+      2: 'marker_2',
+      3: 'marker_3',
+      4: 'marker_4',
+      10: 'ppe_helmet',
+      11: 'ppe_vest',
+    },
+    // detected_class → encyclopedia object id
+    objects: {
+      'fire_extinguisher': 'marker_4',
+    },
+  };
+
+  // Показанные подсказки — не спамим одним объектом
+  const _encyclopediaShown = new Set();
+  let _encyclopediaTimer = null;
+
+  function _showEncyclopediaHint(det, dets = []) {
+    let objId = null;
+    if (det.type === 'marker') {
+      objId = DETECTION_TO_ENCYCLOPEDIA.markers[det.marker_id];
+    } else if (det.detected_class) {
+      objId = DETECTION_TO_ENCYCLOPEDIA.objects[det.detected_class];
+    }
+    if (!objId || _encyclopediaShown.has(objId)) return;
+    _encyclopediaShown.add(objId);
+
+    // Убираем через 5 минут чтобы можно было снова показать
+    setTimeout(() => _encyclopediaShown.delete(objId), 300000);
+
+    // Показываем тост
+    const existing = document.getElementById('enc-hint-toast');
+    if (existing) existing.remove();
+    clearTimeout(_encyclopediaTimer);
+
+    const toast = document.createElement('div');
+    toast.id = 'enc-hint-toast';
+    toast.style.cssText = `
+      position:fixed; bottom:200px; left:50%;
+      transform:translateX(-50%) translateY(20px);
+      background:rgba(7,11,20,0.95);
+      border:1px solid #aa88ff;
+      border-radius:12px; padding:12px 18px;
+      display:flex; align-items:center; gap:10px;
+      box-shadow:0 0 24px rgba(170,136,255,0.3);
+      z-index:35; cursor:pointer; white-space:nowrap;
+      opacity:0; transition:all 0.35s ease;
+      max-width:90vw;
+    `;
+    toast.innerHTML = `
+      <span style="font-size:20px">📖</span>
+      <span style="font-size:13px;color:#cc99ff;font-weight:600">
+        Узнай больше в энциклопедии →
+      </span>
+    `;
+    toast.addEventListener('click', async () => {
+      toast.remove();
+      clearTimeout(_encyclopediaTimer);
+      // Если есть активный квест на этот объект — засчитываем
+      const activeQuest = QuestEngine.getActive();
+      if (activeQuest) {
+        const det = dets[0] || {};
+        let matched = false;
+        if (activeQuest.target_marker_id !== null && activeQuest.target_marker_id !== undefined) {
+          matched = det.marker_id === activeQuest.target_marker_id;
+        }
+        if (!matched && activeQuest.target_class) {
+          matched = det.detected_class === activeQuest.target_class;
+        }
+        if (matched) {
+          await QuestEngine.complete(activeQuest.slug);
+          try { XPBar.update(await API.getProfile()); } catch (_) {}
+        }
+      }
+      // Открываем энциклопедию на нужном объекте
+      window.location.href = `/encyclopedia?obj=${objId}`;
+    });
+    document.body.appendChild(toast);
+
+    // Анимация появления
+    setTimeout(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+    }, 50);
+
+    // Автоскрытие через 4 сек
+    _encyclopediaTimer = setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(10px)';
+      setTimeout(() => toast.remove(), 350);
+    }, 4000);
+  }
+
   function _handleDetections(data) {
     AROverlay.updateDetections(data.all_detections || []);
     if (_isPPEMode && data.ppe) { _updatePPEUI(data.ppe); return; }
     const dets = data.all_detections || [];
+
+    // SpeedRun трекер — передаём все найденные маркеры
+    if (typeof SpeedRun !== 'undefined' && SpeedRun.isActive()) {
+      (data.markers || []).forEach(m => SpeedRun.onMarkerDetected(m.marker_id));
+    }
+
     if (dets.length > 0) {
       console.log('[Vision] Детекций:', dets.length,
         '| markers:', (data.markers||[]).map(m=>m.marker_id),
         '| objects:', (data.objects||[]).map(o=>o.detected_class));
+      _showEncyclopediaHint(dets[0], dets);
       _checkQuestProgress(data);
     }
   }
@@ -164,8 +269,18 @@ const VisionClient = (() => {
       btn.addEventListener('click', async () => {
         btn.remove();
         clearTimeout(_completeTimeout);
+
+        // Для knowledge квестов — сначала показываем вопрос
+        if (quest.type === 'knowledge' && typeof Quiz !== 'undefined') {
+          const correct = await Quiz.show(quest);
+          if (!correct) return;  // неверный ответ — не засчитываем
+        }
+
         await QuestEngine.complete(quest.slug);
-        try { XPBar.update(await API.getProfile()); } catch (_) {}
+        try {
+          const profile = await API.getProfile();
+          XPBar.update(profile);
+        } catch (_) {}
       });
     }
     btn.textContent = `✅ Засчитать «${quest.title}»!`;

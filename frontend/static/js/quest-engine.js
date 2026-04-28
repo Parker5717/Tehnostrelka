@@ -47,6 +47,11 @@ const QuestEngine = (() => {
       await API.startQuest(slug);
       if (typeof Mascot !== 'undefined') Mascot.onQuestStart();
       await load();
+      // Запускаем SpeedRun трекер если это speed_run квест
+      const quest = _quests.find(q => q.slug === slug);
+      if (quest && quest.type === 'speed_run' && typeof SpeedRun !== 'undefined') {
+        SpeedRun.start(quest);
+      }
       return true;
     } catch (err) {
       if (typeof Mascot !== 'undefined') Mascot.onError();
@@ -61,6 +66,7 @@ const QuestEngine = (() => {
   async function complete(slug) {
     try {
       const result = await API.completeQuest(slug);
+      if (typeof SpeedRun !== 'undefined') SpeedRun.stop();
       XPBar.showXPGain(result.xp_gained, result.leveled_up, result.new_level, result.message);
       AROverlay.flashSuccess();
       if (typeof Mascot !== 'undefined') {

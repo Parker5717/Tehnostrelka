@@ -59,7 +59,7 @@ const XPBar = (() => {
   }
 
   /**
-   * Большая анимация level-up.
+   * Большая анимация level-up с конфетти.
    */
   function showLevelUp(level, title) {
     const popup = document.getElementById('levelup-popup');
@@ -69,7 +69,45 @@ const XPBar = (() => {
     document.getElementById('levelup-title').textContent = title;
 
     popup.classList.add('show');
-    setTimeout(() => popup.classList.remove('show'), 3000);
+    _spawnConfetti();
+    setTimeout(() => popup.classList.remove('show'), 3500);
+  }
+
+  function _spawnConfetti() {
+    const colors = ['#00aaff','#00ff88','#ffaa00','#ff3355','#aa00ff','#ffffff'];
+    for (let i = 0; i < 60; i++) {
+      const el = document.createElement('div');
+      const size = 6 + Math.random() * 8;
+      el.style.cssText = `
+        position:fixed;
+        left:${20 + Math.random() * 60}vw;
+        top:-10px;
+        width:${size}px;
+        height:${size}px;
+        background:${colors[Math.floor(Math.random() * colors.length)]};
+        border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+        pointer-events:none;
+        z-index:999;
+        opacity:1;
+        transform:rotate(${Math.random()*360}deg);
+        animation:confettiFall ${1.5 + Math.random() * 2}s ${Math.random() * 0.5}s ease-in forwards;
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    // CSS для анимации (добавляем один раз)
+    if (!document.getElementById('confetti-style')) {
+      const style = document.createElement('style');
+      style.id = 'confetti-style';
+      style.textContent = `
+        @keyframes confettiFall {
+          0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(100vh) rotate(${Math.random()*720}deg); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
   }
 
   return { update, showXPGain, showLevelUp };

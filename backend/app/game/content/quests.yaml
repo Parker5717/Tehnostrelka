@@ -14,20 +14,6 @@ quests:
     difficulty: 1
     params_json: "{}"
 
-  - slug: safety_first
-    title: "Безопасность прежде всего"
-    description: >
-      Перед началом любой работы — проверка снаряжения. Переключись на фронтальную
-      камеру и убедись, что каска и жилет на месте. Система проверит автоматически.
-    type: safety
-    target_class: null
-    target_marker_id: null
-    xp_reward: 100
-    prerequisite_slug: first_steps
-    story_chapter: 1
-    difficulty: 1
-    params_json: '{"required_ppe": ["helmet", "vest"]}'
-
   - slug: find_extinguisher
     title: "Где огнетушитель?"
     description: >
@@ -37,7 +23,7 @@ quests:
     target_class: null
     target_marker_id: 4
     xp_reward: 75
-    prerequisite_slug: safety_first
+    prerequisite_slug: first_steps
     story_chapter: 1
     difficulty: 2
     params_json: "{}"
@@ -51,7 +37,7 @@ quests:
     target_class: null
     target_marker_id: 1
     xp_reward: 100
-    prerequisite_slug: safety_first
+    prerequisite_slug: first_steps
     story_chapter: 2
     difficulty: 2
     params_json: "{}"
@@ -78,8 +64,9 @@ quests:
   - slug: speed_explorer
     title: "Быстрый осмотр"
     description: >
-      Покажи, что ты уже освоился! За 3 минуты найди и отсканируй 4 разных
-      объекта в цеху. Таймер пошёл как только ты принял квест.
+      Покажи, что ты уже освоился! За 3 минуты найди и отсканируй 4 объекта:
+      входную зону, огнетушитель, аварийный стоп и рабочий станок.
+      Таймер пошёл как только ты принял квест.
     type: speed_run
     target_class: null
     target_marker_id: null
@@ -87,7 +74,7 @@ quests:
     prerequisite_slug: machine_intro
     story_chapter: 3
     difficulty: 4
-    params_json: '{"required_slugs": ["find_extinguisher", "emergency_stop", "machine_intro", "first_steps"], "time_sec": 180}'
+    params_json: '{"required_markers": [0, 4, 1, 2], "time_sec": 180}'
 
   - slug: boss_inspection
     title: "Финальный осмотр"

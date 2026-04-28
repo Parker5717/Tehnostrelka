@@ -167,6 +167,15 @@
 
   let _myUsername = '';
 
+  async function apiFetch(path) {
+    const token = sessionStorage.getItem('casper_token');
+    const resp = await fetch(path, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return resp.json();
+  }
+
   async function load() {
     // Профиль
     const profile = await API.getProfile();
@@ -179,13 +188,13 @@
     document.getElementById('hero-xp-text').textContent = `${profile.total_xp} XP · ещё ${profile.xp_to_next_level} до уровня ${profile.level + 1}`;
 
     // Статистика
-    const stats = await API.get('/api/progress/stats');
+    const stats = await apiFetch('/api/progress/stats');
     document.getElementById('stat-quests').textContent = stats.quests_completed;
     document.getElementById('stat-scans').textContent  = stats.scans_total;
     document.getElementById('stat-achs').textContent   = stats.achievements_unlocked;
 
     // Ачивки
-    const achs = await API.get('/api/progress/achievements');
+    const achs = await apiFetch('/api/progress/achievements');
     const achGrid = document.getElementById('ach-grid');
     achGrid.innerHTML = '';
     achs.forEach(a => {
