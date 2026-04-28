@@ -45,9 +45,11 @@ const QuestEngine = (() => {
   async function start(slug) {
     try {
       await API.startQuest(slug);
+      if (typeof Mascot !== 'undefined') Mascot.onQuestStart();
       await load();
       return true;
     } catch (err) {
+      if (typeof Mascot !== 'undefined') Mascot.onError();
       alert(`Не удалось начать квест: ${err.message}`);
       return false;
     }
@@ -61,13 +63,17 @@ const QuestEngine = (() => {
       const result = await API.completeQuest(slug);
       XPBar.showXPGain(result.xp_gained, result.leveled_up, result.new_level, result.message);
       AROverlay.flashSuccess();
-      // Показываем новые ачивки
+      if (typeof Mascot !== 'undefined') {
+        if (result.leveled_up) Mascot.onLevelUp();
+        else Mascot.onQuestComplete();
+      }
       if (result.newly_unlocked_achievements?.length > 0) {
         setTimeout(() => Achievements.notifyNew(result.newly_unlocked_achievements), 1500);
       }
       await load();
       return result;
     } catch (err) {
+      if (typeof Mascot !== 'undefined') Mascot.onError();
       console.error('[QuestEngine] Ошибка завершения квеста:', err);
       return null;
     }

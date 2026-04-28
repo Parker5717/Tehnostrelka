@@ -32,10 +32,10 @@ quests:
     title: "Где огнетушитель?"
     description: >
       Каждый сотрудник должен знать, где висит огнетушитель в его зоне.
-      Найди его и отсканируй — камера распознает красный баллон.
+      Найди его и отсканируй маркер рядом с ним.
     type: discovery
-    target_class: fire_extinguisher
-    target_marker_id: null
+    target_class: null
+    target_marker_id: 4
     xp_reward: 75
     prerequisite_slug: safety_first
     story_chapter: 1

@@ -25,6 +25,9 @@
   // ---- Инициализация vision-клиента ----
   VisionClient.init();
 
+  // ---- Инициализация маскота ----
+  Mascot.init();
+
   // ---- Запуск камеры ----
   async function startCamera(facingMode = 'environment') {
     const ok = await Camera.start(videoEl, facingMode);

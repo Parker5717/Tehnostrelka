@@ -195,9 +195,9 @@ def complete_quest(
     )
     db.flush()  # flush чтобы ScanEvent был виден при проверке ачивок
 
-    # Разблокируем следующий квест если есть
-    next_quest = db.query(Quest).filter(Quest.prerequisite_slug == slug).first()
-    if next_quest:
+    # Разблокируем ВСЕ квесты у которых prerequisite = текущий
+    next_quests = db.query(Quest).filter(Quest.prerequisite_slug == slug).all()
+    for next_quest in next_quests:
         next_progress = (
             db.query(UserQuestProgress)
             .filter(

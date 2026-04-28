@@ -129,3 +129,9 @@ async def serve_markers() -> FileResponse:
 async def serve_safety() -> FileResponse:
     """Safety Check экран — проверка СИЗ."""
     return FileResponse(str(settings.frontend_static_path / "safety.html"))
+
+
+@app.get("/profile", include_in_schema=False)
+async def serve_profile() -> FileResponse:
+    """Страница профиля и лидерборда."""
+    return FileResponse(str(settings.frontend_static_path / "profile.html"))
