@@ -1,17 +1,18 @@
 @echo off
-echo.
-echo  ╔═══════════════════════════════════════╗
-echo  ║     CASPER AR Assistant               ║
-echo  ║     Режим: ArUco маркеры              ║
-echo  ╚═══════════════════════════════════════╝
-echo.
+title CASPER AR Assistant
 
-cd /d "%~dp0backend"
-call .venv\Scripts\activate.bat
-
-echo [*] Запуск сервера...
-echo [*] Открой: http://localhost:8000
-echo [*] Для телефонов запусти ngrok.bat отдельно
+echo.
+echo  ========================================
+echo   CASPER AR Assistant
+echo   Mode: ArUco markers
+echo  ========================================
 echo.
 
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+cd /d "C:\Users\demas\PycharmProjects\Tehnostrelka\backend"
+
+echo [*] Starting server...
+echo [*] Open: http://localhost:8000
+echo.
+
+.venv\Scripts\uvicorn.exe app.main:app --host 0.0.0.0 --port 8000 --reload
+pause
