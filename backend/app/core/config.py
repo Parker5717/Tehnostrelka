@@ -5,6 +5,7 @@
 Используем pydantic-settings, чтобы получить валидацию типов и автодокументацию.
 """
 
+import os
 from functools import lru_cache
 from pathlib import Path
 
@@ -15,6 +16,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 BACKEND_ROOT = PROJECT_ROOT / "backend"
 FRONTEND_ROOT = PROJECT_ROOT / "frontend"
+
+# YOLOv8 режим — читаем сразу при импорте модуля
+YOLO_MODE: bool = True
 
 
 class Settings(BaseSettings):
@@ -30,29 +34,25 @@ class Settings(BaseSettings):
     port: int = 8000
 
     # --- База данных ---
-    # SQLite-файл рядом с backend/, чтобы не плодить директорий
     database_url: str = f"sqlite:///{BACKEND_ROOT / 'casper.db'}"
 
     # --- Auth ---
-    # На хакатоне используем фиксированный секрет, для прода вынести в env
     secret_key: str = "casper-hackathon-dev-secret-change-me"
-    access_token_expire_minutes: int = 60 * 24 * 7  # неделя
+    access_token_expire_minutes: int = 60 * 24 * 7
 
-    # --- CV (понадобится на шаге 4) ---
+    # --- CV ---
     ppe_model_path: Path = BACKEND_ROOT / "models" / "ppe_yolov8.pt"
     equipment_model_path: Path = BACKEND_ROOT / "models" / "equipment_yolov8.pt"
 
-    # --- YOLOv8 режим ---
-    # Включить: SET CASPER_YOLO=1 && uvicorn app.main:app --reload
-    # Требует: pip install -r requirements-yolo.txt
-    yolo_mode: bool = False
+    # YOLOv8 режим — берём из модульной переменной (SET CASPER_YOLO=1)
+    yolo_mode: bool = YOLO_MODE
 
-    # --- Пути к статике / контенту ---
+    # --- Пути ---
     quests_yaml_path: Path = BACKEND_ROOT / "app" / "game" / "content" / "quests.yaml"
     achievements_yaml_path: Path = BACKEND_ROOT / "app" / "game" / "content" / "achievements.yaml"
     frontend_static_path: Path = FRONTEND_ROOT
 
-    # --- CORS (для разработки разрешаем всё, на проде сузить) ---
+    # --- CORS ---
     cors_origins: list[str] = ["*"]
 
     model_config = SettingsConfigDict(
@@ -64,8 +64,4 @@ class Settings(BaseSettings):
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    """
-    Кэшируем экземпляр Settings, чтобы не перечитывать .env на каждый вызов.
-    Использование в коде: `settings = get_settings()`.
-    """
     return Settings()
