@@ -18,7 +18,7 @@ BACKEND_ROOT = PROJECT_ROOT / "backend"
 FRONTEND_ROOT = PROJECT_ROOT / "frontend"
 
 # YOLOv8 режим — читаем сразу при импорте модуля
-YOLO_MODE: bool = True
+YOLO_MODE: YOLO_MODE: bool = os.environ.get("CASPER_YOLO", "0") == "1"
 
 
 class Settings(BaseSettings):
