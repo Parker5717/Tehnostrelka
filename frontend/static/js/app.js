@@ -141,4 +141,23 @@
   }, 30_000);
 
   console.log('[CASPER] AR Assistant ready 🚀');
+
+  // Показываем YOLO badge если сервер запущен в yolo_mode
+  try {
+    const h = await fetch('/health');
+    const hd = await h.json();
+    if (hd.yolo_active) {
+      const badge = document.createElement('div');
+      badge.style.cssText = `
+        position:fixed; top:58px; left:50%; transform:translateX(-50%);
+        background:rgba(0,255,136,0.15); border:1px solid var(--success);
+        border-radius:20px; padding:3px 12px;
+        font-size:11px; font-family:var(--font-mono); color:var(--success);
+        z-index:15; letter-spacing:1px; pointer-events:none;
+      `;
+      badge.textContent = '🤖 YOLOv8 ACTIVE';
+      document.body.appendChild(badge);
+      console.log('[CASPER] YOLOv8 режим активен!');
+    }
+  } catch(_) {}
 })();

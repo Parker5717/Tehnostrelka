@@ -43,7 +43,15 @@ async def lifespan(app: FastAPI):
     from app.db.seed import seed_content
     seed_content()
     log.info("Content seeded")
-    # Сюда на шаге 4 добавим: загрузку YOLO-моделей
+
+    # YOLOv8 режим
+    if settings.yolo_mode:
+        log.info("🤖 YOLOv8 режим ВКЛЮЧЁН")
+        from app.cv.object_detector import _load_model
+        _load_model()
+    else:
+        log.info("📍 Режим: ArUco markers | Для YOLOv8: SET CASPER_YOLO=1 && uvicorn ...")
+
     yield
     log.info("Shutting down %s", settings.app_name)
 
@@ -74,17 +82,17 @@ app.add_middleware(
 
 @app.get("/health", tags=["meta"])
 async def health() -> JSONResponse:
-    """
-    Проверка живости. Используется самим приложением и системами мониторинга.
-    Возвращает 200, если процесс жив. Расширим на шаге 4 проверкой ML-моделей.
-    """
+    """Проверка живости и статус CV-режима."""
+    from app.cv.object_detector import _model_available
     return JSONResponse(
         status_code=200,
         content={
-            "status": "healthy",
-            "app": settings.app_name,
-            "version": settings.app_version,
-            "debug": settings.debug,
+            "status":      "healthy",
+            "app":         settings.app_name,
+            "version":     settings.app_version,
+            "cv_mode":     "yolov8+aruco" if settings.yolo_mode else "aruco_only",
+            "yolo_active": bool(_model_available) if settings.yolo_mode else False,
+            "debug":       settings.debug,
         },
     )
 

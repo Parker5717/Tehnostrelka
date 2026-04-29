@@ -1,0 +1,9 @@
+# Дополнительные зависимости для YOLOv8 режима
+# Установка: pip install -r requirements-yolo.txt
+#
+# ВАЖНО: требует ~2GB свободного места (torch + cuda или cpu)
+# На CPU inference ~200-500ms на кадр (достаточно для демо)
+
+torch==2.3.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
+torchvision==0.18.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
+ultralytics==8.2.0

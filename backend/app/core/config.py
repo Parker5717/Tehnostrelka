@@ -42,6 +42,11 @@ class Settings(BaseSettings):
     ppe_model_path: Path = BACKEND_ROOT / "models" / "ppe_yolov8.pt"
     equipment_model_path: Path = BACKEND_ROOT / "models" / "equipment_yolov8.pt"
 
+    # --- YOLOv8 режим ---
+    # Включить: SET CASPER_YOLO=1 && uvicorn app.main:app --reload
+    # Требует: pip install -r requirements-yolo.txt
+    yolo_mode: bool = False
+
     # --- Пути к статике / контенту ---
     quests_yaml_path: Path = BACKEND_ROOT / "app" / "game" / "content" / "quests.yaml"
     achievements_yaml_path: Path = BACKEND_ROOT / "app" / "game" / "content" / "achievements.yaml"
