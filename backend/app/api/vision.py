@@ -1,7 +1,7 @@
 """
 Vision роутер — обработка кадров с камеры.
 
-POST /api/vision/detect  — принять base64-кадр → вернуть детекции
+POST /api/vision/detect  — принять base64-кадр → вернуть детекции + завершённые квесты
 GET  /api/vision/status  — статус CV-пайплайна (модели загружены?)
 """
 
@@ -9,19 +9,22 @@ import logging
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
 from app.cv.pipeline import process_frame
+from app.db.database import get_db
 from app.db.models import User
+from app.game.quest_trigger import process_cv_detections
 
 log = logging.getLogger("casper.api.vision")
 router = APIRouter()
 
 
 class DetectRequest(BaseModel):
-    image: str          # base64 JPEG/PNG
-    run_ppe: bool = False      # True = фронтальная камера, PPE-проверка
-    run_objects: bool = True   # True = задняя камера, YOLOv8
+    image: str               # base64 JPEG/PNG
+    run_ppe: bool = False    # True = фронтальная камера, PPE-проверка
+    run_objects: bool = True # True = задняя камера, YOLOv8
 
 
 class DetectResponse(BaseModel):
@@ -31,6 +34,7 @@ class DetectResponse(BaseModel):
     all_detections: list[dict]
     processing_ms: int
     error: str | None
+    quest_events: list[dict] = []  # квесты, завершённые в этом кадре
 
 
 @router.post(
@@ -39,19 +43,37 @@ class DetectResponse(BaseModel):
     summary="Обработать кадр с камеры",
     description=(
         "Принимает base64 JPEG-кадр, запускает ArUco + YOLOv8, "
-        "возвращает список детекций для AR-оверлея."
+        "возвращает детекции для AR-оверлея и события завершения квестов."
     ),
 )
 def detect(
     req: DetectRequest,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ) -> DetectResponse:
     result = process_frame(
         b64_image=req.image,
         run_ppe=req.run_ppe,
         run_objects=req.run_objects,
     )
-    return DetectResponse(**result)
+
+    # Проверяем детекции против активных квестов и завершаем матчи
+    quest_events = process_cv_detections(
+        db=db,
+        user=current_user,
+        objects=result["objects"],
+        markers=result["markers"],
+    )
+
+    return DetectResponse(
+        markers=result["markers"],
+        objects=result["objects"],
+        ppe=result["ppe"],
+        all_detections=result["all_detections"],
+        processing_ms=result["processing_ms"],
+        error=result["error"],
+        quest_events=quest_events,
+    )
 
 
 @router.get(
@@ -64,8 +86,8 @@ def cv_status(_: User = Depends(get_current_user)) -> dict:
     return {
         "aruco": "ready",
         "yolov8": (
-            "ready" if _model_available
-            else "unavailable" if _model_available is False
+            "ready"         if _model_available is True
+            else "unavailable"   if _model_available is False
             else "not_loaded_yet"
         ),
     }
