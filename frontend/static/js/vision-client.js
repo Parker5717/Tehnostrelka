@@ -228,8 +228,9 @@ const VisionClient = (() => {
         document.getElementById('btn-complete-quest')?.remove();
         clearTimeout(_completeTimeout);
 
-        // Обновляем XP-бар напрямую из события
-        XPBar.updateFromEvent(evt);
+        // Показываем попап +XP, затем подтягиваем свежий профиль с сервера
+        XPBar.showXPGain(evt.xp_gained, evt.leveled_up, evt.new_level, evt.level_title);
+        API.getProfile().then(p => XPBar.update(p)).catch(() => {});
 
         // Перезагружаем квесты — разблокировались новые
         QuestEngine.load();
