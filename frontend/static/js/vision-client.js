@@ -217,12 +217,37 @@ const VisionClient = (() => {
       (data.markers || []).forEach(m => SpeedRun.onMarkerDetected(m.marker_id));
     }
 
+    // Сервер автоматически завершил квесты — обновляем UI без ручной кнопки
+    const autoCompleted = (data.quest_events || []).some(e => e.type === 'quest_complete');
+    if (autoCompleted) {
+      data.quest_events.forEach(evt => {
+        if (evt.type !== 'quest_complete') return;
+        console.log('[Quest] Автозавершён сервером:', evt.quest_slug, '+' + evt.xp_gained + ' XP');
+
+        // Убираем ручную кнопку если висит
+        document.getElementById('btn-complete-quest')?.remove();
+        clearTimeout(_completeTimeout);
+
+        // Обновляем XP-бар напрямую из события
+        XPBar.updateFromEvent(evt);
+
+        // Перезагружаем квесты — разблокировались новые
+        QuestEngine.load();
+
+        // Показываем ачивки если разблокировались
+        if (evt.newly_unlocked_achievements?.length > 0) {
+          if (typeof Achievements !== 'undefined') Achievements.showUnlocked(evt.newly_unlocked_achievements);
+        }
+      });
+    }
+
     if (dets.length > 0) {
       console.log('[Vision] Детекций:', dets.length,
         '| markers:', (data.markers||[]).map(m=>m.marker_id),
         '| objects:', (data.objects||[]).map(o=>o.detected_class));
       _showEncyclopediaHint(dets[0], dets);
-      _checkQuestProgress(data);
+      // Ручную кнопку показываем только если сервер не завершил квест сам
+      if (!autoCompleted) _checkQuestProgress(data);
     }
   }
 
